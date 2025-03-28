@@ -38,6 +38,6 @@ func main() {
     })
 
     handler := c.Handler(r)
-    log.Println("Server starting on port 8081...")
-    log.Fatal(http.ListenAndServe(":8081", handler))
+    log.Println("Server starting on port 8080...")
+    log.Fatal(http.ListenAndServe(":8080", handler))
 }
