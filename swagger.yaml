@@ -1,0 +1,183 @@
+openapi: 3.0.0
+info:
+  title: La Liga Tracker API
+  description: API for tracking football matches in La Liga
+  version: 1.0.0
+
+servers:
+  - url: http://localhost:8081/api
+    description: Local development server
+
+paths:
+  /matches:
+    get:
+      summary: Get all matches
+      responses:
+        '200':
+          description: List of all matches
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Match'
+    post:
+      summary: Create a new match
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/MatchInput'
+      responses:
+        '201':
+          description: Match created successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Match'
+
+  /matches/{id}:
+    parameters:
+      - name: id
+        in: path
+        required: true
+        schema:
+          type: integer
+    get:
+      summary: Get a match by ID
+      responses:
+        '200':
+          description: Match details
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Match'
+    put:
+      summary: Update a match
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/MatchInput'
+      responses:
+        '200':
+          description: Match updated successfully
+    delete:
+      summary: Delete a match
+      responses:
+        '204':
+          description: Match deleted successfully
+
+  /matches/{id}/goals:
+    patch:
+      summary: Update match goals
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                homeGoals:
+                  type: integer
+                awayGoals:
+                  type: integer
+      responses:
+        '200':
+          description: Goals updated successfully
+
+  /matches/{id}/yellowcards:
+    patch:
+      summary: Register a yellow card
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: Yellow card registered successfully
+
+  /matches/{id}/redcards:
+    patch:
+      summary: Register a red card
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: Red card registered successfully
+
+  /matches/{id}/extratime:
+    patch:
+      summary: Update extra time
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                extraTime:
+                  type: integer
+      responses:
+        '200':
+          description: Extra time updated successfully
+
+components:
+  schemas:
+    Match:
+      type: object
+      properties:
+        id:
+          type: integer
+        homeTeam:
+          type: string
+        awayTeam:
+          type: string
+        homeGoals:
+          type: integer
+        awayGoals:
+          type: integer
+        matchDate:
+          type: string
+          format: date
+        yellowCards:
+          type: integer
+        redCards:
+          type: integer
+        extraTime:
+          type: integer
+
+    MatchInput:
+      type: object
+      required:
+        - homeTeam
+        - awayTeam
+        - matchDate
+      properties:
+        homeTeam:
+          type: string
+        awayTeam:
+          type: string
+        matchDate:
+          type: string
+          format: date

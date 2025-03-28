@@ -18,7 +18,12 @@ func InitDB() error {
         id INTEGER PRIMARY KEY AUTOINCREMENT,
         home_team TEXT NOT NULL,
         away_team TEXT NOT NULL,
-        match_date TEXT NOT NULL
+		home_goals INTEGER DEFAULT 0,
+		away_goals INTEGER DEFAULT 0,
+        match_date TEXT NOT NULL,
+		yellow_cards INTEGER DEFAULT 0,
+		red_cards INTEGER DEFAULT 0,
+		extra_time INTEGER DEFAULT 0
     );`
 
 	_, err = DB.Exec(createTableSQL)

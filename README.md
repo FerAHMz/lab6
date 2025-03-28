@@ -9,14 +9,16 @@
 
 ## Project Description
 
-This project implements a RESTful API for tracking football matches. Built with Go and containerized with Docker, it provides endpoints for managing match data including creating, reading, updating, and deleting matches.
+This project implements a RESTful API for tracking football matches. Built with Go and containerized with Docker, it provides endpoints for managing match data including creating, reading, updating, and deleting matches, as well as tracking match events like goals, cards, and extra time.
 
 ## Features
 
 - **CRUD Operations:** Complete set of endpoints for match management
+- **Match Events:** Track goals, yellow cards, red cards, and extra time
 - **Docker Support:** Containerized application for easy deployment
-- **In-Memory Storage:** Lightweight data storage solution
+- **SQLite Storage:** Persistent data storage
 - **CORS Enabled:** Frontend-ready with CORS configuration
+- **API Documentation:** Interactive Swagger UI documentation
 
 ## API Testing
 
@@ -30,6 +32,16 @@ This project implements a RESTful API for tracking football matches. Built with 
 - `POST /api/matches` - Create a new match
 - `PUT /api/matches/{id}` - Update a match
 - `DELETE /api/matches/{id}` - Delete a match
+- `PATCH /api/matches/{id}/goals` - Update match goals
+- `PATCH /api/matches/{id}/yellowcards` - Add yellow card
+- `PATCH /api/matches/{id}/redcards` - Add red card
+- `PATCH /api/matches/{id}/extratime` - Update extra time
+
+## API Documentation
+Access the interactive API documentation at:
+```bash
+http://localhost:8081/swagger-ui.html
+```
 
 ## Running the Application
 
