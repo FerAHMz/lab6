@@ -29,6 +29,7 @@ func main() {
 
     r.PathPrefix("/swagger.yaml").Handler(http.FileServer(http.Dir(".")))
     r.PathPrefix("/swagger-ui.html").Handler(http.FileServer(http.Dir(".")))
+    r.PathPrefix("/").Handler(http.FileServer(http.Dir("."))) 
 
     c := cors.New(cors.Options{
         AllowedOrigins: []string{"*"},

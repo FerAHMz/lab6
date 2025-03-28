@@ -10,7 +10,7 @@ import (
 )
 
 func GetMatches(w http.ResponseWriter, r *http.Request) {
-	rows, err := database.DB.Query("SELECT id, home_team, away_team, home_goals, away_goals, match_date, yellow_cards, red_cards, extra_time FROM matches")
+	rows, err := database.DB.Query("SELECT id, home_team, away_team, match_date FROM matches")
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
@@ -20,7 +20,7 @@ func GetMatches(w http.ResponseWriter, r *http.Request) {
 	var matches []models.Match
 	for rows.Next() {
 		var m models.Match
-		if err := rows.Scan(&m.ID, &m.HomeTeam, &m.AwayTeam, &m.HomeGoals, &m.AwayGoals, &m.MatchDate, &m.YellowCards, &m.RedCards, &m.ExtraTime); err != nil {
+		if err := rows.Scan(&m.ID, &m.HomeTeam, &m.AwayTeam, &m.MatchDate); err != nil {
 			http.Error(w, err.Error(), http.StatusInternalServerError)
 			return
 		}	
@@ -38,7 +38,7 @@ func GetMatch(w http.ResponseWriter, r *http.Request) {
 		return
 	}	
 	var match models.Match
-	err = database.DB.QueryRow("SELECT id, home_team, away_team, home_goals, away_goals, match_date, yellow_cards, red_cards, extra_time FROM matches WHERE id = ?", id).Scan(&match.ID, &match.HomeTeam, &match.AwayTeam, &match.HomeGoals, &match.AwayGoals, &match.MatchDate, &match.YellowCards, &match.RedCards, &match.ExtraTime)
+	err = database.DB.QueryRow("SELECT id, home_team, away_team, match_date FROM matches WHERE id = ?", id).Scan(&match.ID, &match.HomeTeam, &match.AwayTeam, &match.MatchDate)
 	if err!= nil {
 		http.Error(w, "Match not found", http.StatusNotFound)
 		return
@@ -104,108 +104,101 @@ func DeleteMatch(w http.ResponseWriter, r *http.Request) {
 }
 
 func UpdateGoals(w http.ResponseWriter, r *http.Request) {
-	params := mux.Vars(r)
-	id, err := strconv.Atoi(params["id"])
-	if err!= nil {
-		http.Error(w, "Invalid match ID", http.StatusBadRequest)
-		return
-	}	
-	var match models.Match
-	if err := json.NewDecoder(r.Body).Decode(&match); err!= nil {
-		http.Error(w, err.Error(), http.StatusBadRequest)
-		return
-	}
-	_, err = database.DB.Exec("UPDATE matches SET home_goals =?, away_goals =? WHERE id =?", match.HomeGoals, match.AwayGoals, id)
-	if err!= nil {
-		http.Error(w, err.Error(), http.StatusInternalServerError)
-		return
-	}
-	var updatedMatch models.Match
-	err = database.DB.QueryRow("SELECT id, home_team, away_team, home_goals, away_goals, match_date, yellow_cards, red_cards, extra_time FROM matches WHERE id = ?", id).
-	Scan(&updatedMatch.ID, &updatedMatch.HomeTeam, &updatedMatch.AwayTeam, &updatedMatch.HomeGoals, &updatedMatch.AwayGoals, &updatedMatch.MatchDate, &updatedMatch.YellowCards, &updatedMatch.RedCards, &updatedMatch.ExtraTime)
-	if err!= nil {
-		http.Error(w, err.Error(), http.StatusInternalServerError)
-		return
-	}
-	w.Header().Set("Content-Type", "application/json")
-	w.WriteHeader(http.StatusOK)
-	json.NewEncoder(w).Encode(updatedMatch)
+    params := mux.Vars(r)
+    id, err := strconv.Atoi(params["id"])
+    if err != nil {
+        http.Error(w, "Invalid match ID", http.StatusBadRequest)
+        return
+    }
+
+    var exists bool
+    err = database.DB.QueryRow("SELECT EXISTS(SELECT 1 FROM matches WHERE id = ?)", id).Scan(&exists)
+    if err != nil || !exists {
+        http.Error(w, "Match not found", http.StatusNotFound)
+        return
+    }
+
+    _, err = database.DB.Exec("UPDATE matches SET home_goals = COALESCE(home_goals, 0) + 1 WHERE id = ?", id)
+    if err != nil {
+        http.Error(w, "Error updating goals", http.StatusInternalServerError)
+        return
+    }
+    w.Header().Set("Content-Type", "application/json")
+    w.WriteHeader(http.StatusOK)
+    json.NewEncoder(w).Encode(map[string]string{"message": "Goal registered successfully"})
 }
 
 func UpdateYellowCards(w http.ResponseWriter, r *http.Request) {
-	params := mux.Vars(r)
-	id, err := strconv.Atoi(params["id"])
-	if err!= nil {
-		http.Error(w, "Invalid match ID", http.StatusBadRequest)
-		return
-	}	
-	_, err = database.DB.Exec("UPDATE matches SET yellow_cards = yellow_cards + 1 WHERE id =?", id)
-	if err!= nil {
-		http.Error(w, err.Error(), http.StatusInternalServerError)
-		return
-	}
-	var updatedMatch models.Match
-	err = database.DB.QueryRow("SELECT id, home_team, away_team, home_goals, away_goals, match_date, yellow_cards, red_cards, extra_time FROM matches WHERE id = ?", id).
-        Scan(&updatedMatch.ID, &updatedMatch.HomeTeam, &updatedMatch.AwayTeam, &updatedMatch.HomeGoals, &updatedMatch.AwayGoals, &updatedMatch.MatchDate, &updatedMatch.YellowCards, &updatedMatch.RedCards, &updatedMatch.ExtraTime)
+    params := mux.Vars(r)
+    id, err := strconv.Atoi(params["id"])
     if err != nil {
-        http.Error(w, err.Error(), http.StatusInternalServerError)
+        http.Error(w, "Invalid match ID", http.StatusBadRequest)
+        return
+    }
+
+    var exists bool
+    err = database.DB.QueryRow("SELECT EXISTS(SELECT 1 FROM matches WHERE id = ?)", id).Scan(&exists)
+    if err != nil || !exists {
+        http.Error(w, "Match not found", http.StatusNotFound)
+        return
+    }
+
+    _, err = database.DB.Exec("UPDATE matches SET yellow_cards = COALESCE(yellow_cards, 0) + 1 WHERE id = ?", id)
+    if err != nil {
+        http.Error(w, "Error updating yellow cards", http.StatusInternalServerError)
         return
     }
     w.Header().Set("Content-Type", "application/json")
     w.WriteHeader(http.StatusOK)
-    json.NewEncoder(w).Encode(updatedMatch)
+    json.NewEncoder(w).Encode(map[string]string{"message": "Yellow card registered successfully"})
 }
 
 func UpdateRedCards(w http.ResponseWriter, r *http.Request) {
-	params := mux.Vars(r)
-	id, err := strconv.Atoi(params["id"])
-	if err!= nil {
-		http.Error(w, "Invalid match ID", http.StatusBadRequest)
-		return
-	}	
-	_, err = database.DB.Exec("UPDATE matches SET red_cards = red_cards + 1 WHERE id =?", id)
-	if err!= nil {
-		http.Error(w, err.Error(), http.StatusInternalServerError)
-		return
-	}
-	var updatedMatch models.Match
-	err = database.DB.QueryRow("SELECT id, home_team, away_team, home_goals, away_goals, match_date, yellow_cards, red_cards, extra_time FROM matches WHERE id = ?", id).
-        Scan(&updatedMatch.ID, &updatedMatch.HomeTeam, &updatedMatch.AwayTeam, &updatedMatch.HomeGoals, &updatedMatch.AwayGoals, &updatedMatch.MatchDate, &updatedMatch.YellowCards, &updatedMatch.RedCards, &updatedMatch.ExtraTime)
+    params := mux.Vars(r)
+    id, err := strconv.Atoi(params["id"])
     if err != nil {
-        http.Error(w, err.Error(), http.StatusInternalServerError)
+        http.Error(w, "Invalid match ID", http.StatusBadRequest)
         return
     }
 
+    var exists bool
+    err = database.DB.QueryRow("SELECT EXISTS(SELECT 1 FROM matches WHERE id = ?)", id).Scan(&exists)
+    if err != nil || !exists {
+        http.Error(w, "Match not found", http.StatusNotFound)
+        return
+    }
+
+    _, err = database.DB.Exec("UPDATE matches SET red_cards = COALESCE(red_cards, 0) + 1 WHERE id = ?", id)
+    if err != nil {
+        http.Error(w, "Error updating red cards", http.StatusInternalServerError)
+        return
+    }
     w.Header().Set("Content-Type", "application/json")
     w.WriteHeader(http.StatusOK)
-    json.NewEncoder(w).Encode(updatedMatch)
+    json.NewEncoder(w).Encode(map[string]string{"message": "Red card registered successfully"})
 }
 
 func UpdateExtraTime(w http.ResponseWriter, r *http.Request) {
-	params := mux.Vars(r)
-	id, err := strconv.Atoi(params["id"])
-	if err!= nil {
-		http.Error(w, "Invalid match ID", http.StatusBadRequest)
-		return
-	}	
-	var match models.Match
-	if err := json.NewDecoder(r.Body).Decode(&match); err!= nil {
-		http.Error(w, err.Error(), http.StatusBadRequest)
-		return
-	}
-	_, err = database.DB.Exec("UPDATE matches SET extra_time = extra_time + ? WHERE id =?", match.ExtraTime, id)
-	if err!= nil {
-		http.Error(w, err.Error(), http.StatusInternalServerError)
-		return		
-	}
-	var updatedMatch models.Match
-	err = database.DB.QueryRow("SELECT id, home_team, away_team, home_goals, away_goals, match_date, yellow_cards, red_cards, extra_time FROM matches WHERE id = ?", id).Scan(&updatedMatch.ID, &updatedMatch.HomeTeam, &updatedMatch.AwayTeam, &updatedMatch.HomeGoals, &updatedMatch.AwayGoals, &updatedMatch.MatchDate, &updatedMatch.YellowCards, &updatedMatch.RedCards, &updatedMatch.ExtraTime)
+    params := mux.Vars(r)
+    id, err := strconv.Atoi(params["id"])
     if err != nil {
-        http.Error(w, err.Error(), http.StatusInternalServerError)
+        http.Error(w, "Invalid match ID", http.StatusBadRequest)
         return
     }
 
+    var exists bool
+    err = database.DB.QueryRow("SELECT EXISTS(SELECT 1 FROM matches WHERE id = ?)", id).Scan(&exists)
+    if err != nil || !exists {
+        http.Error(w, "Match not found", http.StatusNotFound)
+        return
+    }
+
+    _, err = database.DB.Exec("UPDATE matches SET extra_time = COALESCE(extra_time, 0) + 1 WHERE id = ?", id)
+    if err != nil {
+        http.Error(w, "Error updating extra time", http.StatusInternalServerError)
+        return
+    }
     w.Header().Set("Content-Type", "application/json")
     w.WriteHeader(http.StatusOK)
-    json.NewEncoder(w).Encode(updatedMatch)
+    json.NewEncoder(w).Encode(map[string]string{"message": "Extra time registered successfully"})
 }
