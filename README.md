@@ -22,6 +22,9 @@ This project implements a RESTful API for tracking football matches. Built with 
 
 ## API Testing
 
+You can find the Postman collection for testing the API endpoints here:
+[Postman Collection](https://fernandohernandez-4170971.postman.co/workspace/Fernando-Hernandez's-Workspace~5ebfdd38-b11b-4507-82dd-b9324e34cfa7/collection/43568958-988e5f50-eee8-427a-b2ed-751faae460cc?action=share&creator=43568958)
+
 ### POST Request Test
 ![POST Request Test](https://github.com/FerAHMz/lab6/blob/main/Images/Prueba%20post.png)
 

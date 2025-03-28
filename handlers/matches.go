@@ -31,20 +31,20 @@ func GetMatches(w http.ResponseWriter, r *http.Request) {
 }
 
 func GetMatch(w http.ResponseWriter, r *http.Request) {
-	params := mux.Vars(r)
-	id, err := strconv.Atoi(params["id"])
-	if err!= nil {
-		http.Error(w, "Invalid match ID", http.StatusBadRequest)
-		return
-	}	
-	var match models.Match
-	err = database.DB.QueryRow("SELECT id, home_team, away_team, match_date FROM matches WHERE id = ?", id).Scan(&match.ID, &match.HomeTeam, &match.AwayTeam, &match.MatchDate)
-	if err!= nil {
-		http.Error(w, "Match not found", http.StatusNotFound)
-		return
-	}
-	w.Header().Set("Content-Type", "application/json")
-	json.NewEncoder(w).Encode(match)
+    params := mux.Vars(r)
+    id, err := strconv.Atoi(params["id"])
+    if err != nil {
+        http.Error(w, "Invalid match ID", http.StatusBadRequest)
+        return
+    }   
+    var match models.Match
+    err = database.DB.QueryRow("SELECT id, home_team, away_team, match_date FROM matches WHERE id = ?", id).Scan(&match.ID, &match.HomeTeam, &match.AwayTeam, &match.MatchDate)
+    if err != nil {
+        http.Error(w, "Match not found", http.StatusNotFound)
+        return
+    }
+    w.Header().Set("Content-Type", "application/json")
+    json.NewEncoder(w).Encode(match)
 }
 
 func CreateMatch(w http.ResponseWriter, r *http.Request) {
@@ -89,18 +89,26 @@ func UpdateMatch(w http.ResponseWriter, r *http.Request) {
 }
 
 func DeleteMatch(w http.ResponseWriter, r *http.Request) {
-	params := mux.Vars(r)
-	id, err := strconv.Atoi(params["id"])
-	if err!= nil {
-		http.Error(w, "Invalid match ID", http.StatusBadRequest)
-		return
-	}	
-	_, err = database.DB.Exec("DELETE FROM matches WHERE id =?", id)
-	if err != nil {
-		http.Error(w, err.Error(), http.StatusInternalServerError)
-		return
-	}
-	w.WriteHeader(http.StatusNoContent)
+    params := mux.Vars(r)
+    id, err := strconv.Atoi(params["id"])
+    if err != nil {
+        http.Error(w, "Invalid match ID", http.StatusBadRequest)
+        return
+    }
+
+    var exists bool
+    err = database.DB.QueryRow("SELECT EXISTS(SELECT 1 FROM matches WHERE id = ?)", id).Scan(&exists)
+    if err != nil || !exists {
+        http.Error(w, "Match not found", http.StatusNotFound)
+        return
+    }
+
+    _, err = database.DB.Exec("DELETE FROM matches WHERE id = ?", id)
+    if err != nil {
+        http.Error(w, err.Error(), http.StatusInternalServerError)
+        return
+    }
+    w.WriteHeader(http.StatusNoContent)
 }
 
 func UpdateGoals(w http.ResponseWriter, r *http.Request) {
