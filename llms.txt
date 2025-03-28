@@ -1,0 +1,60 @@
+La Liga Match Tracker API
+
+API Documentation
+
+1. Endpoints Overview
+   GET /api/matches
+   - Returns all matches
+   - Response: Array of match objects
+   
+   GET /api/matches/{id}
+   - Returns a specific match by ID
+   - Response: Single match object
+   
+   POST /api/matches
+   - Creates a new match
+   - Request body: Match object (homeTeam, awayTeam, matchDate)
+   - Response: Created match object with ID
+   
+   PUT /api/matches/{id}
+   - Updates an existing match
+   - Request body: Match object (homeTeam, awayTeam, matchDate)
+   - Response: Updated match object
+   
+   DELETE /api/matches/{id}
+   - Deletes a match
+   - Response: No content (204)
+
+2. Data Structure
+   Match Object:
+   {
+     "id": integer,
+     "homeTeam": string,
+     "awayTeam": string,
+     "matchDate": string (YYYY-MM-DD)
+   }
+
+3. Storage Implementation
+   - Uses SQLite database
+   - Table: matches
+   - Fields: id, home_team, away_team, match_date
+
+4. Technologies Used
+   - Go (Golang)
+   - Gorilla Mux for routing
+   - SQLite for data persistence
+   - Docker for containerization
+
+5. Running the API
+   Local:
+   - Port: 8080
+   - Command: go run main.go
+
+   Docker:
+   - Port: 8080
+   - Command: docker compose up --build
+
+6. CORS Configuration
+   - Enabled for all origins (*)
+   - Allowed methods: GET, POST, PUT, DELETE, OPTIONS
+   - Allowed headers: Content-Type, Authorization, X-Requested-With
