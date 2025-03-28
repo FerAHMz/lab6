@@ -5,7 +5,7 @@ info:
   version: 1.0.0
 
 servers:
-  - url: http://localhost:8081/api
+  - url: http://localhost:8080/api
     description: Local development server
 
 paths:
@@ -79,20 +79,18 @@ paths:
           required: true
           schema:
             type: integer
-      requestBody:
-        required: true
-        content:
-          application/json:
-            schema:
-              type: object
-              properties:
-                homeGoals:
-                  type: integer
-                awayGoals:
-                  type: integer
       responses:
         '200':
-          description: Goals updated successfully
+          description: Goal registered successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+              example:
+                message: "Goal registered successfully"
 
   /matches/{id}/yellowcards:
     patch:
@@ -106,6 +104,15 @@ paths:
       responses:
         '200':
           description: Yellow card registered successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+              example:
+                message: "Yellow card registered successfully"
 
   /matches/{id}/redcards:
     patch:
@@ -119,6 +126,15 @@ paths:
       responses:
         '200':
           description: Red card registered successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+              example:
+                message: "Red card registered successfully"
 
   /matches/{id}/extratime:
     patch:
@@ -129,18 +145,18 @@ paths:
           required: true
           schema:
             type: integer
-      requestBody:
-        required: true
-        content:
-          application/json:
-            schema:
-              type: object
-              properties:
-                extraTime:
-                  type: integer
       responses:
         '200':
-          description: Extra time updated successfully
+          description: Extra time registered successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+              example:
+                message: "Extra time registered successfully"
 
 components:
   schemas:
@@ -153,9 +169,7 @@ components:
           type: string
         awayTeam:
           type: string
-        homeGoals:
-          type: integer
-        awayGoals:
+        match_goals:
           type: integer
         matchDate:
           type: string

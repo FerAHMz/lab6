@@ -118,7 +118,7 @@ func UpdateGoals(w http.ResponseWriter, r *http.Request) {
         return
     }
 
-    _, err = database.DB.Exec("UPDATE matches SET home_goals = COALESCE(home_goals, 0) + 1 WHERE id = ?", id)
+    _, err = database.DB.Exec("UPDATE matches SET match_goals = COALESCE(match_goals, 0) + 1 WHERE id = ?", id)
     if err != nil {
         http.Error(w, "Error updating goals", http.StatusInternalServerError)
         return
